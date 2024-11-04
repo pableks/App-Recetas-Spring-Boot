@@ -107,7 +107,7 @@ public class RecetaController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> createReceta(
             @Valid @RequestBody Receta receta,
@@ -174,8 +174,8 @@ public class RecetaController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @DeleteMapping("/eliminar/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteReceta(
             @PathVariable Long id,
             HttpServletRequest request) {

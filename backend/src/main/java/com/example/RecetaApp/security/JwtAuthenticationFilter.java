@@ -31,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Exact matches for public paths
     private static final List<String> PROTECTED_PATHS = Arrays.asList(
         "/api/recetas/mis-recetas",
-        "/api/recetas/actualizar",  // This needs to match your new route
+        "/api/recetas/actualizar",  
         "/api/recetas/crear",
         "/api/recetas/eliminar"
     );
