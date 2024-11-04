@@ -21,31 +21,32 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/",
                     "/recetas",
-                    "/login",
                     "/recetas/view/**",
+                    "/login",
                     "/auth/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",
                     "/webjars/**",
-                    "/error"
+                    "/error",
+                    "/fragments/**"
                 ).permitAll()
+                .requestMatchers("/recetas/my-recipes/**").permitAll()  // Changed this line
                 .requestMatchers(
-                    "/recipes/my-recipes/**",
-                    "/recipes/create/**",
-                    "/recipes/edit/**",
-                    "/recipes/delete/**"
+                    "/recetas/create",
+                    "/recetas/edit/**",
+                    "/recetas/delete/**"
                 ).authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/auth/login")
-                .defaultSuccessUrl("/recipes")
+                .defaultSuccessUrl("/recetas")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
-                .logoutSuccessUrl("/recipes?logout")
+                .logoutSuccessUrl("/recetas?logout")
                 .permitAll()
             );
 

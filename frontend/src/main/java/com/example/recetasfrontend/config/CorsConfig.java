@@ -14,17 +14,21 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow all origins for development (customize for production)
-        config.addAllowedOrigin("http://localhost:8081");
+        // Allow both frontend and backend origins
+        config.addAllowedOrigin("http://localhost:8081"); // Frontend
+        config.addAllowedOrigin("http://localhost:8080"); // Backend API
         
-        // Allow all HTTP methods (GET, POST, etc.)
+        // Allow all HTTP methods
         config.addAllowedMethod("*");
         
         // Allow all headers
         config.addAllowedHeader("*");
         
-        // Allow credentials (cookies, authorization headers, etc.)
+        // Allow credentials (important for session cookies)
         config.setAllowCredentials(true);
+        
+        // Expose headers that might be needed by the frontend
+        config.addExposedHeader("Authorization");
         
         source.registerCorsConfiguration("/api/**", config);
         return new CorsFilter(source);
