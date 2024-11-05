@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Recipe Form</title>
+    
+    <!-- Additional CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h2 class="card-title text-center mb-4" id="form-title">Create Recipe</h2>
+                            
+                            <!-- Loading spinner -->
+                            <div id="loading-spinner" class="text-center" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <!-- Error container -->
+                            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+
+                            <!-- Recipe Form -->
+                            <form id="recipe-form" onsubmit="handleSubmit(event)">
+                                <!-- Recipe Name -->
+                                <div class="mb-3">
+                                    <label for="nombre" class="form-label">Recipe Name*</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                                </div>
+
+                                <!-- Preparation Time -->
+                                <div class="mb-3">
+                                    <label for="tiempoPreparacion" class="form-label">Preparation Time (minutes)*</label>
+                                    <input type="number" class="form-control" id="tiempoPreparacion" name="tiempoPreparacion" min="1" required>
+                                </div>
+
+                                <!-- Difficulty -->
+                                <div class="mb-3">
+                                    <label for="dificultad" class="form-label">Difficulty*</label>
+                                    <select class="form-select" id="dificultad" name="dificultad" required>
+                                        <option value="">Select difficulty level</option>
+                                        <option value="FACIL">Easy</option>
+                                        <option value="MEDIO">Medium</option>
+                                        <option value="DIFICIL">Hard</option>
+                                    </select>
+                                </div>
+
+                                <!-- Ingredients -->
+                                <div class="mb-3">
+                                    <label class="form-label">Ingredients*</label>
+                                    <div id="ingredients-container">
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control ingredient-input" placeholder="Enter ingredient">
+                                            <button type="button" class="btn btn-outline-danger" onclick="removeIngredient(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addIngredient()">
+                                        <i class="bi bi-plus"></i> Add Ingredient
+                                    </button>
+                                </div>
+
+                                <!-- Instructions -->
+                                <div class="mb-3">
+                                    <label class="form-label">Instructions*</label>
+                                    <div id="instructions-container">
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">1</span>
+                                            <input type="text" class="form-control instruction-input" placeholder="Enter instruction step">
+                                            <button type="button" class="btn btn-outline-danger" onclick="removeInstruction(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addInstruction()">
+                                        <i class="bi bi-plus"></i> Add Instruction
+                                    </button>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Recipe</button>
+                                    <a href="/recetas" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript dependencies -->
+    <script th:src="@{/js/recipe-form.js}"></script>
+</body>
+</html>

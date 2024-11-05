@@ -29,9 +29,22 @@ public class RecetaController {
 
     @GetMapping("/recetas/create")
     public String createReceta(HttpServletRequest request, Model model) {
-        if (!isAuthenticated(request)) {
+        // Debug logging
+        System.out.println("Checking authentication for /recetas/create");
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                System.out.println("Cookie found: " + cookie.getName() + " = " + cookie.getValue());
+            }
+        }
+
+        boolean authenticated = isAuthenticated(request);
+        System.out.println("Is authenticated: " + authenticated);
+
+        if (!authenticated) {
             return "redirect:/auth/login";
         }
+        
         addAuthAttributesToModel(request, model);
         return "receta-form";
     }
@@ -43,7 +56,7 @@ public class RecetaController {
         }
         addAuthAttributesToModel(request, model);
         model.addAttribute("recipeId", id);
-        return "receta-form";
+        return "receta-edit";
     }
 
     @GetMapping("/auth/login")
@@ -55,43 +68,44 @@ public class RecetaController {
     }
 
     @GetMapping("/recetas/my-recipes")
-public String myRecipes(HttpServletRequest request, Model model) {
-    // Check authentication first
-    if (!isAuthenticated(request)) {
-        return "redirect:/auth/login";
-    }
-    
-    // Add auth attributes to model
-    addAuthAttributesToModel(request, model);
-    
-    // Get auth token
-    String authToken = null;
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-        for (Cookie cookie : cookies) {
-            if ("AUTH-TOKEN".equals(cookie.getName())) {
-                authToken = cookie.getValue();
-                model.addAttribute("authToken", authToken);
-                break;
-            }
+    public String myRecipes(HttpServletRequest request, Model model) {
+        if (!isAuthenticated(request)) {
+            return "redirect:/auth/login";
         }
+        
+        addAuthAttributesToModel(request, model);
+        return "my-recipes";
     }
-    
-    return "my-recipes";
-}
 
     private boolean isAuthenticated(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("AUTH-TOKEN".equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
-                    return true;
-                }
+        if (request.getCookies() == null) {
+            System.out.println("No cookies found");
+            return false;
+        }
+
+        boolean hasAuthToken = false;
+        boolean hasSessionId = false;
+
+        for (Cookie cookie : request.getCookies()) {
+            if ("AUTH-TOKEN".equals(cookie.getName()) && 
+                cookie.getValue() != null && 
+                !cookie.getValue().isEmpty()) {
+                hasAuthToken = true;
+            }
+            if ("SESSION-ID".equals(cookie.getName()) && 
+                cookie.getValue() != null && 
+                !cookie.getValue().isEmpty()) {
+                hasSessionId = true;
             }
         }
-        return false;
-    }
 
+        // Debug logging
+        System.out.println("Has AUTH-TOKEN: " + hasAuthToken);
+        System.out.println("Has SESSION-ID: " + hasSessionId);
+
+        // Consider authenticated if either AUTH-TOKEN or SESSION-ID is present
+        return hasAuthToken || hasSessionId;
+    }
 
     private void addAuthAttributesToModel(HttpServletRequest request, Model model) {
         boolean isAuthenticated = isAuthenticated(request);
@@ -109,8 +123,12 @@ public String myRecipes(HttpServletRequest request, Model model) {
                 }
             }
             
-            model.addAttribute("authToken", authToken);
-            model.addAttribute("sessionId", sessionId);
+            if (authToken != null) {
+                model.addAttribute("authToken", authToken);
+            }
+            if (sessionId != null) {
+                model.addAttribute("sessionId", sessionId);
+            }
         }
     }
 }

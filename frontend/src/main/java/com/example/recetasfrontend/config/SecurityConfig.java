@@ -22,6 +22,10 @@ public class SecurityConfig {
                     "/",
                     "/recetas",
                     "/recetas/view/**",
+                    "/recetas/create",
+                    "/recetas/edit/**",
+                    "/recetas/delete/**",
+                    "/recetas/my-recipes/**",
                     "/login",
                     "/auth/**",
                     "/css/**",
@@ -31,12 +35,6 @@ public class SecurityConfig {
                     "/error",
                     "/fragments/**"
                 ).permitAll()
-                .requestMatchers("/recetas/my-recipes/**").permitAll()  // Changed this line
-                .requestMatchers(
-                    "/recetas/create",
-                    "/recetas/edit/**",
-                    "/recetas/delete/**"
-                ).authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

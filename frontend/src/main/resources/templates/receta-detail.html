@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Recipe Details</title>
+    <script th:src="@{/js/recipe-detail.js}" defer></script>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div id="loading-spinner" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+    
+            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+    
+            <div id="recipe-detail" class="card shadow-sm" style="display: none;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h1 id="recipe-title" class="card-title display-5 mb-0"></h1>
+                        <div id="action-buttons" class="d-flex gap-2"></div>
+                    </div>
+    
+                    <div class="mb-4">
+                        <span id="prep-time" class="badge bg-light text-dark me-2"></span>
+                        <span id="difficulty" class="badge bg-light text-dark"></span>
+                    </div>
+    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h3 class="h5 mb-0">Ingredients</h3>
+                                </div>
+                                <div class="card-body">
+                                    <ul id="ingredients-list" class="list-group list-group-flush"></ul>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="h5 mb-0">Instructions</h3>
+                                </div>
+                                <div class="card-body">
+                                    <ol id="instructions-list" class="list-group list-group-flush"></ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

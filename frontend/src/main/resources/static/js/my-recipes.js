@@ -17,13 +17,10 @@ function loadMyRecipes() {
             // Handle different response formats
             let recipes = [];
             if (response.data) {
-                // If response is wrapped in a data property
                 recipes = response.data;
             } else if (Array.isArray(response)) {
-                // If response is directly an array
                 recipes = response;
             } else if (typeof response === 'object') {
-                // If response is a single recipe, wrap it in an array
                 recipes = [response];
             }
             
@@ -39,7 +36,7 @@ function loadMyRecipes() {
             console.log('Processed recipes:', recipes);
             $("#loading-spinner").hide();
             $("#recipes-container").show();
-            displayRecipes(recipes);
+            displayMyRecipes(recipes);  // Use new display function specifically for my recipes
         },
         error: function(xhr, status, error) {
             console.error('Error loading my recipes:', error);
@@ -59,12 +56,11 @@ function loadMyRecipes() {
     });
 }
 
-// Modify displayRecipes to handle empty arrays
-function displayRecipes(recipes) {
+function displayMyRecipes(recipes) {
     const container = $("#recipes-container");
     container.empty();
     
-    console.log('Displaying recipes:', recipes);
+    console.log('Displaying my recipes:', recipes);
     
     if (!recipes || recipes.length === 0) {
         container.html(`
@@ -86,8 +82,6 @@ function displayRecipes(recipes) {
                </p>`
             : '<p class="text-muted mb-0">No ingredients listed</p>';
 
-        const isOwner = recipe.creadorUsername === getCookie('SESSION-ID');
-
         const recipeCard = `
             <div class="col">
                 <div class="card h-100 shadow-sm">
@@ -106,16 +100,36 @@ function displayRecipes(recipes) {
                     <div class="card-footer bg-transparent">
                         <div class="d-grid gap-2">
                             <a href="/recetas/view/${recipe.id}" class="btn btn-primary">View Recipe</a>
-                            ${isOwner ? `
-                                <a href="/recetas/edit/${recipe.id}" class="btn btn-secondary">Edit</a>
-                                <button onclick="deleteRecipe(${recipe.id})" class="btn btn-danger">Delete</button>
-                            ` : ''}
+                            <a href="/recetas/edit/${recipe.id}" class="btn btn-secondary">Edit</a>
+                            <button onclick="deleteRecipe(${recipe.id})" class="btn btn-danger">Delete</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
         container.append(recipeCard);
+    });
+}
+
+function deleteRecipe(id) {
+    if (!confirm('Are you sure you want to delete this recipe?')) {
+        return;
+    }
+
+    $.ajax({
+        url: `http://localhost:8080/api/recetas/${id}`,
+        method: 'DELETE',
+        crossDomain: true,
+        xhrFields: {
+            withCredentials: true
+        },
+        success: function() {
+            loadMyRecipes();  // Reload the recipes after deletion
+        },
+        error: function(xhr, status, error) {
+            alert('Error deleting recipe. Please try again.');
+            console.error('Error:', error);
+        }
     });
 }
 

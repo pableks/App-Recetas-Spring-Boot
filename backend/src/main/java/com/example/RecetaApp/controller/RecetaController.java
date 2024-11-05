@@ -58,9 +58,9 @@ public class RecetaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Receta> getRecetaById(@PathVariable Long id) {
+    public ResponseEntity<RecetaDTO> getRecetaById(@PathVariable Long id) {
         return recetaService.getRecetaById(id)
-            .map(ResponseEntity::ok)
+            .map(receta -> ResponseEntity.ok(new RecetaDTO(receta)))
             .orElse(ResponseEntity.notFound().build());
     }
 
