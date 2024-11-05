@@ -99,9 +99,9 @@ function displayMyRecipes(recipes) {
                     </div>
                     <div class="card-footer bg-transparent">
                         <div class="d-grid gap-2">
-                            <a href="/recetas/view/${recipe.id}" class="btn btn-primary">View Recipe</a>
-                            <a href="/recetas/edit/${recipe.id}" class="btn btn-secondary">Edit</a>
-                            <button onclick="deleteRecipe(${recipe.id})" class="btn btn-danger">Delete</button>
+                            <a href="/recetas/view/${recipe.id}" class="btn btn-primary">Ver Receta</a>
+                            <a href="/recetas/edit/${recipe.id}" class="btn btn-secondary">Editar</a>
+                            <button onclick="deleteRecipe(${recipe.id})" class="btn btn-danger">Eliminar</button>
                         </div>
                     </div>
                 </div>

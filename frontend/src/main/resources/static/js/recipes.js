@@ -71,6 +71,8 @@ function displayRecipes(recipes) {
                     }
                     <div class="card-body">
                         <h5 class="card-title">${recipe.nombre}</h5>
+                        <p class="text-muted small mb-2">Creada por: ${recipe.creadorUsername || 'Unknown'}</p>
+
                         <div class="d-flex align-items-center mb-2">
                             <span class="badge bg-light text-dark me-2">⏱️ ${recipe.tiempoPreparacion} min</span>
                             <span class="badge bg-light text-dark">📊 ${recipe.dificultad.toLowerCase()}</span>

@@ -131,8 +131,8 @@ function handleSubmit(event) {
     }
 
     const url = recipeId 
-        ? `http://localhost:8080/api/recetas/${recipeId}`
-        : 'http://localhost:8080/api/recetas';
+        ? `http://localhost:8080/api/recetas/actualizar/${recipeId}`
+        : 'http://localhost:8080/api/recetas/crear';
     
     const method = recipeId ? 'PUT' : 'POST';
 

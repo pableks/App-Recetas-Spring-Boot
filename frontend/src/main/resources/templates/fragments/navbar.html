@@ -10,13 +10,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/recetas}">All Recipes</a>
+                    <a class="nav-link" th:href="@{/recetas}">Todas las Recetas</a>
                 </li>
                 <li class="nav-item" th:if="${isAuthenticated}">
-                    <a class="nav-link" th:href="@{/recetas/my-recipes}">My Recipes</a>
+                    <a class="nav-link" th:href="@{/recetas/my-recipes}">Mis Recetas</a>
                 </li>
                 <li class="nav-item" th:if="${isAuthenticated}">
-                    <a class="nav-link" th:href="@{/recetas/create}">Create Recipe</a>
+                    <a class="nav-link" th:href="@{/recetas/create}">Crear Recetas</a>
                 </li>
             </ul>
             <ul class="navbar-nav">

@@ -11,10 +11,10 @@
     <div layout:fragment="content">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>All Recipes</h2>
+                <h2>Todas las Recetas</h2>
                 <div sec:authorize="isAuthenticated()">
                     <a th:href="@{/recipes/create}" class="btn btn-primary">
-                        Add New Recipe
+                        Agregar Nueva Receta
                     </a>
                 </div>
             </div>
@@ -22,7 +22,7 @@
             <!-- Loading spinner -->
             <div id="loading-spinner" class="text-center">
                 <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
             </div>
             
