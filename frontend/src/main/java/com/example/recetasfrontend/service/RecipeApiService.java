@@ -14,8 +14,11 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RecipeApiService {
@@ -167,31 +170,64 @@ public class RecipeApiService {
     }
 
     public Recipe updateRecipe(Long id, Recipe recipe, HttpServletRequest request) {
-        try {
-            HttpHeaders headers = createHeaders(request);
-            HttpEntity<Recipe> entity = new HttpEntity<>(recipe, headers);
+    try {
+        HttpHeaders headers = createHeaders(request);
+        
+        // Convert lists to string format as expected by backend
+        String ingredientes = recipe.getListaIngredientes() != null ? 
+            String.join("\n", recipe.getListaIngredientes()) : "";
+        String preparacion = recipe.getPasosPreparacion() != null ?
+            String.join("\n", recipe.getPasosPreparacion()) : "";
+        
+        // Create a map of data to match backend expectations
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("id", id);
+        requestBody.put("nombre", recipe.getNombre());
+        requestBody.put("tiempoPreparacion", recipe.getTiempoPreparacion());
+        requestBody.put("dificultad", recipe.getDificultad());
+        requestBody.put("ingredientes", ingredientes);
+        requestBody.put("preparacion", preparacion);
+        
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        
+        logger.debug("Updating recipe with id: {}", id);
+        logger.debug("Request body: {}", requestBody);
+        
+        ResponseEntity<ApiResponse<Recipe>> response = restTemplate.exchange(
+            API_BASE_URL + "/recetas/actualizar/" + id,
+            HttpMethod.PUT,
+            entity,
+            new ParameterizedTypeReference<ApiResponse<Recipe>>() {}
+        );
+        
+        ApiResponse<Recipe> apiResponse = response.getBody();
+        if (apiResponse != null && apiResponse.isSuccess()) {
+            Recipe updatedRecipe = apiResponse.getData();
             
-            logger.debug("Updating recipe with id: {}", id);
-            
-            ResponseEntity<ApiResponse<Recipe>> response = restTemplate.exchange(
-                API_BASE_URL + "/recetas/actualizar/" + id,
-                HttpMethod.PUT,
-                entity,
-                new ParameterizedTypeReference<ApiResponse<Recipe>>() {}
-            );
-            
-            ApiResponse<Recipe> apiResponse = response.getBody();
-            if (apiResponse != null && apiResponse.isSuccess()) {
-                return apiResponse.getData();
-            } else {
-                String errorMessage = apiResponse != null ? apiResponse.getMessage() : "No response from server";
-                throw new RuntimeException("Error updating recipe: " + errorMessage);
+            // Convert backend response back to frontend format if needed
+            if (updatedRecipe != null) {
+                if (updatedRecipe.getIngredientes() != null) {
+                    updatedRecipe.setListaIngredientes(
+                        Arrays.asList(updatedRecipe.getIngredientes().split("\n"))
+                    );
+                }
+                if (updatedRecipe.getPreparacion() != null) {
+                    updatedRecipe.setPasosPreparacion(
+                        Arrays.asList(updatedRecipe.getPreparacion().split("\n"))
+                    );
+                }
             }
-        } catch (Exception e) {
-            logger.error("Error updating recipe with id: " + id, e);
-            throw new RuntimeException("Error updating recipe: " + e.getMessage(), e);
+            
+            return updatedRecipe;
+        } else {
+            String errorMessage = apiResponse != null ? apiResponse.getMessage() : "No response from server";
+            throw new RuntimeException("Error updating recipe: " + errorMessage);
         }
+    } catch (Exception e) {
+        logger.error("Error updating recipe with id: " + id, e);
+        throw new RuntimeException("Error updating recipe: " + e.getMessage(), e);
     }
+}
 
     public void deleteRecipe(Long id, HttpServletRequest request) {
         try {

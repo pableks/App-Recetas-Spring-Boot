@@ -8,6 +8,22 @@
 <body>
     <div layout:fragment="content">
         <div class="container mt-4">
+        
+            <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/}" class="text-decoration-none">Inicio</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/recetas}" class="text-decoration-none">Recetas</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page" 
+                        th:text="${recipe != null ? recipe.nombre : 'Detalle de Receta'}">
+                        Recipe Details
+                    </li>
+                </ol>
+            </nav>
             <!-- Show error message if exists -->
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}">
             </div>
@@ -73,17 +89,16 @@
                                     <h3 class="h5 mb-0">Instrucciones</h3>
                                 </div>
                                 <div class="card-body">
-                                    <ol class="list-group list-group-flush">
-                                        <li th:each="paso : ${recipe.pasosPreparacion}" 
-                                            class="list-group-item" 
-                                            th:text="${paso}">
-                                            Instruction step
-                                        </li>
-                                    </ol>
+                                    <div class="list-group list-group-flush">
+                                        <div th:each="paso, stat : ${recipe.pasosPreparacion}" 
+                                             class="list-group-item d-flex align-items-start">
+                                             <span class="badge rounded-pill me-3" style="background-color: #ff9bcd;" th:text="${stat.count}">1</span>
+                                            <div th:text="${paso}">Instruction step</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
                     <!-- Created By -->
                     <div class="mt-4 text-muted">

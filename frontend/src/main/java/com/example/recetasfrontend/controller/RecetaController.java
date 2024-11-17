@@ -8,12 +8,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class RecetaController {
@@ -55,44 +60,115 @@ public class RecetaController {
     }
 
     @GetMapping("/recetas/create")
-    public String createReceta(HttpServletRequest request, Model model) {
-        if (!isAuthenticated(request)) {
-            return "redirect:/auth/login";
-        }
+    public String createRecetaForm(HttpServletRequest request, Model model) {
+        // Initialize a new Recipe with empty lists
+        Recipe recipe = new Recipe();
+        recipe.setListaIngredientes(new ArrayList<>());
+        recipe.setPasosPreparacion(new ArrayList<>());
         
-        model.addAttribute("recipe", new Recipe());
-        addAuthAttributesToModel(request, model);
+        model.addAttribute("recipe", recipe);
+        addAuthAttributesToModel(request, model);  // Add this line
+
         return "receta-form";
     }
 
     @PostMapping("/recetas/create")
-    public String saveReceta(@ModelAttribute Recipe recipe, HttpServletRequest request) {
-        if (!isAuthenticated(request)) {
-            return "redirect:/auth/login";
+    public String createReceta(@ModelAttribute("recipe") @Valid Recipe recipe, 
+                             BindingResult result,
+                             HttpServletRequest request,
+                             RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "receta-form";
         }
-        
+
         try {
+            // Filter out empty values
+            recipe.setListaIngredientes(recipe.getListaIngredientes().stream()
+                .filter(i -> i != null && !i.trim().isEmpty())
+                .collect(Collectors.toList()));
+            
+            recipe.setPasosPreparacion(recipe.getPasosPreparacion().stream()
+                .filter(p -> p != null && !p.trim().isEmpty())
+                .collect(Collectors.toList()));
+
             Recipe savedRecipe = recipeApiService.createRecipe(recipe, request);
             return "redirect:/recetas/view/" + savedRecipe.getId();
         } catch (Exception e) {
-            return "redirect:/recetas?error=" + e.getMessage();
+            log.error("Error creating recipe", e);
+            redirectAttributes.addFlashAttribute("error", "Error al crear la receta: " + e.getMessage());
+            return "redirect:/recetas/create";
         }
     }
 
     @GetMapping("/recetas/edit/{id}")
-    public String editReceta(@PathVariable Long id, HttpServletRequest request, Model model) {
+    public String editRecetaForm(@PathVariable Long id, HttpServletRequest request, Model model) {
         if (!isAuthenticated(request)) {
             return "redirect:/auth/login";
         }
         
         try {
             Recipe recipe = recipeApiService.getRecipeById(id, request);
+            if (recipe == null) {
+                throw new RuntimeException("Recipe not found");
+            }
+            
+            // Ensure lists are initialized
+            if (recipe.getListaIngredientes() == null) {
+                recipe.setListaIngredientes(new ArrayList<>());
+            }
+            if (recipe.getPasosPreparacion() == null) {
+                recipe.setPasosPreparacion(new ArrayList<>());
+            }
+            
             model.addAttribute("recipe", recipe);
-            addAuthAttributesToModel(request, model);
+            addAuthAttributesToModel(request, model);  // Add this line
+            return "receta-edit";
         } catch (Exception e) {
             model.addAttribute("error", "Error loading recipe: " + e.getMessage());
+            return "redirect:/recetas";
         }
-        return "receta-form";
+    }
+
+    @PostMapping("/recetas/edit/{id}")
+    public String updateRecipe(@PathVariable Long id,
+                            @ModelAttribute("recipe") @Valid Recipe recipe,
+                            BindingResult result,
+                            HttpServletRequest request,
+                            RedirectAttributes redirectAttributes,
+                            Model model) {
+        if (!isAuthenticated(request)) {
+            return "redirect:/auth/login";
+        }
+
+        if (result.hasErrors()) {
+            addAuthAttributesToModel(request, model);
+            return "receta-edit";
+        }
+
+        try {
+            // Filter out empty values
+            recipe.setListaIngredientes(recipe.getListaIngredientes().stream()
+                .filter(i -> i != null && !i.trim().isEmpty())
+                .collect(Collectors.toList()));
+            
+            recipe.setPasosPreparacion(recipe.getPasosPreparacion().stream()
+                .filter(p -> p != null && !p.trim().isEmpty())
+                .collect(Collectors.toList()));
+
+            // Convert lists to strings
+            recipe.setIngredientes(recipe.getIngredientsAsString());
+            recipe.setPreparacion(recipe.getPreparacionAsString());
+
+            recipe.setId(id); // Ensure the ID is set
+            Recipe updatedRecipe = recipeApiService.updateRecipe(id, recipe, request);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Receta actualizada exitosamente");
+            return "redirect:/recetas/view/" + updatedRecipe.getId();
+        } catch (Exception e) {
+            log.error("Error updating recipe", e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar la receta: " + e.getMessage());
+            return "redirect:/recetas/edit/" + id;
+        }
     }
 
     @GetMapping("/recetas/my-recipes")

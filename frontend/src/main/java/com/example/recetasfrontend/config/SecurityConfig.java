@@ -28,6 +28,9 @@ public class SecurityConfig {
                     "/recetas/view/**",
                     "/auth/**",
                     "/recetas/**",
+                    "/recetas/create",
+                    "/recetas/edit/**",
+
                     "/css/**",
                     "/js/**",
                     "/images/**",
