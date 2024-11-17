@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
     <title>Mis Recetas</title>
-    <!-- Include your scripts in the head with Thymeleaf syntax -->
-    <script th:src="@{/js/recipes.js}" defer></script>
-    <script th:src="@{/js/my-recipes.js}" defer></script>
 </head>
 <body>
     <div layout:fragment="content">
@@ -16,15 +13,75 @@
                 <a th:href="@{/recetas/create}" class="btn btn-primary">Agregar Nueva Receta</a>
             </div>
 
-            <div id="loading-spinner" class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
+            <!-- Show error message if exists -->
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}">
+            </div>
+
+            <!-- Show success message if exists -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Recipe Cards -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" th:if="${recipes != null && !#lists.isEmpty(recipes)}">
+                <div class="col" th:each="recipe : ${recipes}">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${recipe.nombre}">Recipe Name</h5>
+                            
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-light text-dark me-2" 
+                                      th:text="${recipe.tiempoPreparacion + ' min'}">
+                                </span>
+                                <span class="badge bg-light text-dark" 
+                                      th:text="${#strings.toLowerCase(recipe.dificultad)}">
+                                </span>
+                            </div>
+
+                            <p class="card-text small">
+                                <span th:text="${#strings.listJoin(recipe.listaIngredientes, ' • ')}">
+                                </span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/recetas/view/{id}(id=${recipe.id})}" 
+                                   class="btn btn-primary">
+                                    Ver Receta
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/recetas/edit/{id}(id=${recipe.id})}" 
+                                       class="btn btn-secondary flex-grow-1">
+                                        Editar
+                                    </a>
+                                    <form th:action="@{/recetas/{id}(id=${recipe.id})}" 
+                                          method="post" 
+                                          class="flex-grow-1"
+                                          onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta receta?');">
+                                        <input type="hidden" name="_method" value="DELETE"/>
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
-
-            <div id="recipes-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" style="display: none;"></div>
+            <!-- No recipes message -->
+            <div class="text-center py-5" th:if="${recipes == null || #lists.isEmpty(recipes)}">
+                <div class="mb-4">
+                    <i class="bi bi-journal-x display-1 text-muted"></i>
+                </div>
+                <h3>No tienes recetas todavía</h3>
+                <p class="text-muted">¡Comienza a crear tus propias recetas!</p>
+                <a th:href="@{/recetas/create}" class="btn btn-primary mt-3">
+                    Crear Nueva Receta
+                </a>
+            </div>
         </div>
     </div>
 </body>

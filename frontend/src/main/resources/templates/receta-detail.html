@@ -1,58 +1,109 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-    <title>Recipe Details</title>
-    <script th:src="@{/js/recipe-detail.js}" defer></script>
+    <title th:text="${recipe != null ? recipe.nombre : 'Recipe Details'}">Recipe Details</title>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container mt-4">
-            <div id="loading-spinner" class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+            <!-- Show error message if exists -->
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}">
             </div>
-    
-            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
-    
-            <div id="recipe-detail" class="card shadow-sm" style="display: none;">
+
+            <!-- Recipe Detail Card -->
+            <div th:if="${recipe != null}" class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-4">
-                        <h1 id="recipe-title" class="card-title display-5 mb-0"></h1>
-                        <div id="action-buttons" class="d-flex gap-2"></div>
+                        <h1 class="card-title display-5 mb-0" th:text="${recipe.nombre}">Recipe Name</h1>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2" th:if="${isAuthenticated && recipe.creadorUsername == sessionId}">
+                            <a th:href="@{/recetas/edit/{id}(id=${recipe.id})}" 
+                               class="btn btn-secondary">
+                                Editar
+                            </a>
+                            <form th:action="@{/recetas/{id}(id=${recipe.id})}" 
+                                  method="post" 
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta receta?');">
+                                <input type="hidden" name="_method" value="DELETE"/>
+                                <button type="submit" class="btn btn-danger">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
                     </div>
-    
+
+                    <!-- Recipe Metadata -->
                     <div class="mb-4">
-                        <span id="prep-time" class="badge bg-light text-dark me-2"></span>
-                        <span id="difficulty" class="badge bg-light text-dark"></span>
+                        <span class="badge bg-light text-dark me-2" 
+                              th:text="${recipe.tiempoPreparacion + ' min'}">
+                            Prep Time
+                        </span>
+                        <span class="badge bg-light text-dark" 
+                              th:text="${#strings.toLowerCase(recipe.dificultad)}">
+                            Difficulty
+                        </span>
                     </div>
-    
+
                     <div class="row">
+                        <!-- Ingredients -->
                         <div class="col-md-4">
                             <div class="card mb-4">
                                 <div class="card-header">
                                     <h3 class="h5 mb-0">Ingredientes</h3>
                                 </div>
                                 <div class="card-body">
-                                    <ul id="ingredients-list" class="list-group list-group-flush"></ul>
+                                    <ul class="list-group list-group-flush">
+                                        <li th:each="ingrediente : ${recipe.listaIngredientes}" 
+                                            class="list-group-item" 
+                                            th:text="${ingrediente}">
+                                            Ingredient
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
-    
+
+                        <!-- Instructions -->
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="h5 mb-0">Instrucciones</h3>
                                 </div>
                                 <div class="card-body">
-                                    <ol id="instructions-list" class="list-group list-group-flush"></ol>
+                                    <ol class="list-group list-group-flush">
+                                        <li th:each="paso : ${recipe.pasosPreparacion}" 
+                                            class="list-group-item" 
+                                            th:text="${paso}">
+                                            Instruction step
+                                        </li>
+                                    </ol>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Created By -->
+                    <div class="mt-4 text-muted">
+                        <small>
+                            Creado por: <span th:text="${recipe.creadorUsername}">Username</span>
+                        </small>
+                    </div>
                 </div>
+            </div>
+
+            <!-- No Recipe Found Message -->
+            <div th:if="${recipe == null && error == null}" class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-journal-x display-1 text-muted"></i>
+                </div>
+                <h3>Receta no encontrada</h3>
+                <p class="text-muted">La receta que buscas no existe o ha sido eliminada.</p>
+                <a th:href="@{/recetas}" class="btn btn-primary mt-3">
+                    Ver todas las recetas
+                </a>
             </div>
         </div>
     </div>

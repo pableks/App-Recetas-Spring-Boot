@@ -1,52 +1,82 @@
 package com.example.recetasfrontend.controller;
 
+import com.example.recetasfrontend.model.Recipe;
+import com.example.recetasfrontend.service.RecipeApiService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:8081", allowCredentials = "true")
 public class RecetaController {
+    private final RecipeApiService recipeApiService;
+    private static final Logger log = LoggerFactory.getLogger(RecetaController.class);  // Add this line
+
+    @Autowired
+    public RecetaController(RecipeApiService recipeApiService) {
+        this.recipeApiService = recipeApiService;
+    }
 
     @GetMapping({"/", "/recetas"})
     public String viewRecetas(HttpServletRequest request, Model model) {
-        addAuthAttributesToModel(request, model);
+        try {
+            List<Recipe> recipes = recipeApiService.getAllRecipes(request);
+            model.addAttribute("recipes", recipes);
+            
+            addAuthAttributesToModel(request, model);
+            
+            if (request.getParameter("deleted") != null) {
+                model.addAttribute("successMessage", "Recipe successfully deleted.");
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading recipes: " + e.getMessage());
+        }
         return "recetas";
     }
 
     @GetMapping("/recetas/view/{id}")
     public String viewReceta(@PathVariable Long id, HttpServletRequest request, Model model) {
-        addAuthAttributesToModel(request, model);
-        model.addAttribute("recipeId", id);
+        try {
+            Recipe recipe = recipeApiService.getRecipeById(id, request);
+            model.addAttribute("recipe", recipe);
+            addAuthAttributesToModel(request, model);
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading recipe: " + e.getMessage());
+        }
         return "receta-detail";
     }
 
     @GetMapping("/recetas/create")
     public String createReceta(HttpServletRequest request, Model model) {
-        // Debug logging
-        System.out.println("Checking authentication for /recetas/create");
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                System.out.println("Cookie found: " + cookie.getName() + " = " + cookie.getValue());
-            }
-        }
-
-        boolean authenticated = isAuthenticated(request);
-        System.out.println("Is authenticated: " + authenticated);
-
-        if (!authenticated) {
+        if (!isAuthenticated(request)) {
             return "redirect:/auth/login";
         }
         
+        model.addAttribute("recipe", new Recipe());
         addAuthAttributesToModel(request, model);
         return "receta-form";
+    }
+
+    @PostMapping("/recetas/create")
+    public String saveReceta(@ModelAttribute Recipe recipe, HttpServletRequest request) {
+        if (!isAuthenticated(request)) {
+            return "redirect:/auth/login";
+        }
+        
+        try {
+            Recipe savedRecipe = recipeApiService.createRecipe(recipe, request);
+            return "redirect:/recetas/view/" + savedRecipe.getId();
+        } catch (Exception e) {
+            return "redirect:/recetas?error=" + e.getMessage();
+        }
     }
 
     @GetMapping("/recetas/edit/{id}")
@@ -54,17 +84,15 @@ public class RecetaController {
         if (!isAuthenticated(request)) {
             return "redirect:/auth/login";
         }
-        addAuthAttributesToModel(request, model);
-        model.addAttribute("recipeId", id);
-        return "receta-edit";
-    }
-
-    @GetMapping("/auth/login")
-    public String showLogin(HttpServletRequest request) {
-        if (isAuthenticated(request)) {
-            return "redirect:/recetas";
+        
+        try {
+            Recipe recipe = recipeApiService.getRecipeById(id, request);
+            model.addAttribute("recipe", recipe);
+            addAuthAttributesToModel(request, model);
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading recipe: " + e.getMessage());
         }
-        return "login";
+        return "receta-form";
     }
 
     @GetMapping("/recetas/my-recipes")
@@ -73,13 +101,53 @@ public class RecetaController {
             return "redirect:/auth/login";
         }
         
-        addAuthAttributesToModel(request, model);
+        try {
+            List<Recipe> myRecipes = recipeApiService.getMyRecipes(request);
+            model.addAttribute("recipes", myRecipes);
+            
+            // Add authentication attributes for navbar
+            addAuthAttributesToModel(request, model);
+            
+            if (request.getParameter("deleted") != null) {
+                model.addAttribute("successMessage", "Recipe successfully deleted.");
+            }
+            
+            log.info("Retrieved {} recipes for user", 
+                myRecipes != null ? myRecipes.size() : 0);
+            
+        } catch (Exception e) {
+            log.error("Error loading user recipes", e);
+            model.addAttribute("error", "Error loading your recipes: " + e.getMessage());
+        }
+        
         return "my-recipes";
     }
 
+    // Add delete method to handle recipe deletion
+    @PostMapping("/recetas/{id}")
+    public String deleteRecipe(@PathVariable Long id, 
+                             HttpServletRequest request,
+                             RedirectAttributes redirectAttributes) {
+        if (!isAuthenticated(request)) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            recipeApiService.deleteRecipe(id, request);
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Recipe deleted successfully");
+        } catch (Exception e) {
+            log.error("Error deleting recipe", e);
+            redirectAttributes.addFlashAttribute("error", 
+                "Error deleting recipe: " + e.getMessage());
+        }
+
+        return "redirect:/recetas/my-recipes";
+    }
+
+
     private boolean isAuthenticated(HttpServletRequest request) {
         if (request.getCookies() == null) {
-            System.out.println("No cookies found");
             return false;
         }
 
@@ -99,11 +167,6 @@ public class RecetaController {
             }
         }
 
-        // Debug logging
-        System.out.println("Has AUTH-TOKEN: " + hasAuthToken);
-        System.out.println("Has SESSION-ID: " + hasSessionId);
-
-        // Consider authenticated if either AUTH-TOKEN or SESSION-ID is present
         return hasAuthToken || hasSessionId;
     }
 

@@ -1,57 +1,123 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout}">
 <head>
     <title>Recetas</title>
-    <!-- Any page specific styles can go here -->
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container">
+        <div class="container mt-4">
+            <!-- Debug Information -->
+            <div class="alert alert-info" th:if="${@environment.getProperty('spring.profiles.active') == 'dev'}">
+                <p>Debug Info:</p>
+                <p>Recipes count: <span th:text="${recipes != null ? recipes.size() : 'null'}"></span></p>
+                <p>Is authenticated: <span th:text="${isAuthenticated}"></span></p>
+                <p>Session ID: <span th:text="${sessionId}"></span></p>
+            </div>
+
+            <!-- Header Section -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Todas las Recetas</h2>
-                <div sec:authorize="isAuthenticated()">
-                    <a th:href="@{/recipes/create}" class="btn btn-primary">
-                        Agregar Nueva Receta
+                <div th:if="${isAuthenticated}">
+                    <a th:href="@{/recetas/create}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Agregar Nueva Receta
                     </a>
                 </div>
             </div>
-            
-            <!-- Loading spinner -->
-            <div id="loading-spinner" class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
+
+            <!-- Alert Messages -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}">Success message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}">Error message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Recipes Grid -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" 
+                 th:if="${recipes != null && !#lists.isEmpty(recipes)}">
+                <div class="col" th:each="recipe : ${recipes}">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Recipe Content -->
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${recipe.nombre}">Recipe Name</h5>
+                            <p class="text-muted small mb-2">
+                                Creada por: <span th:text="${recipe.creadorUsername ?: 'Unknown'}">Username</span>
+                            </p>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${recipe.tiempoPreparacion + ' min'}">Time</span>
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-bar-chart"></i>
+                                    <span th:text="${#strings.toLowerCase(recipe.dificultad)}">Difficulty</span>
+                                </span>
+                            </div>
+                            <p class="card-text small text-muted mb-0" 
+                               th:if="${recipe.listaIngredientes != null && !#lists.isEmpty(recipe.listaIngredientes)}">
+                                <span th:text="${#strings.listJoin(recipe.listaIngredientes, ' • ')}">
+                                    Ingredients
+                                </span>
+                            </p>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/recetas/view/{id}(id=${recipe.id})}" 
+                                   class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> Ver Receta
+                                </a>
+                                
+                                <div th:if="${isAuthenticated && recipe.creadorUsername == sessionId}"
+                                     class="d-flex gap-2">
+                                    <a th:href="@{/recetas/edit/{id}(id=${recipe.id})}" 
+                                       class="btn btn-secondary flex-grow-1">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form th:action="@{/recetas/delete/{id}(id=${recipe.id})}" 
+                                          method="post" 
+                                          class="flex-grow-1">
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Recipes container -->
-            <div id="recipes-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <!-- Recipe cards will be loaded here dynamically -->
-            </div>
-            
-            <!-- Error message container -->
-            <div id="error-container" class="alert alert-danger" style="display: none;">
+
+            <!-- Empty State -->
+            <div th:if="${recipes == null || #lists.isEmpty(recipes)}" class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-journal-x" style="font-size: 3rem;"></i>
+                </div>
+                <h3>No hay recetas disponibles</h3>
+                <p class="text-muted">¡Sé el primero en compartir una receta!</p>
+                <a th:if="${isAuthenticated}" th:href="@{/recetas/create}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Crear Nueva Receta
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Page specific scripts -->
-    <th:block layout:fragment="scripts">
-        <script th:src="@{/js/recipes.js}"></script>
-        <script>
-            // Debug logs
-            $(document).ready(function() {
-                console.log('Document ready');
-                if ($("#recipes-container").length) {
-                    console.log('Recipe container found');
-                    loadRecipes();
-                } else {
-                    console.log('Recipe container not found');
-                }
-            });
-        </script>
-    </th:block>
+    <!-- Add this at the bottom of your recetas.html -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debug logging
+            console.log('Recipes:', /*[[${recipes}]]*/ []);
+            console.log('Is authenticated:', /*[[${isAuthenticated}]]*/ false);
+            console.log('Session ID:', /*[[${sessionId}]]*/ null);
+        });
+        /*]]>*/
+    </script>
 </body>
 </html>

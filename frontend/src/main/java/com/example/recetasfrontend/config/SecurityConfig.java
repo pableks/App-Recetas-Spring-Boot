@@ -8,44 +8,40 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())  // Disable CSRF for simplicity
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/",
                     "/recetas",
                     "/recetas/view/**",
-                    "/recetas/create",
-                    "/recetas/edit/**",
-                    "/recetas/delete/**",
-                    "/recetas/my-recipes/**",
-                    "/login",
                     "/auth/**",
+                    "/recetas/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",
                     "/webjars/**",
                     "/error",
-                    "/fragments/**"
+                    "/favicon.ico"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/auth/login")
-                .defaultSuccessUrl("/recetas")
-                .permitAll()
+                .disable()  // Disable Spring's default login form
             )
             .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
-                .logoutSuccessUrl("/recetas?logout")
-                .permitAll()
+                .disable()  // Disable Spring's default logout handling
             );
 
         return http.build();

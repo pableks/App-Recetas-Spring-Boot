@@ -97,31 +97,32 @@ public class AuthController {
                     .body(new LoginResponse(false, "Usuario no encontrado"));
             }
 
-            // Check for existing session with this user agent
-            if (userSessionService.hasActiveSession(username, userAgent)) {
-                log.info("Active session detected - IP: {} - Username: {} - Agent: {} - Time: {}", 
-                    clientIP, username, userAgent, timestamp.format(formatter));
-                String existingToken = userSessionService.getActiveToken(username, userAgent);
-                
-                // Get the existing session ID for this user+agent combination
-                // You might need to add a method to UserSessionService to get this
-                String existingSessionId = userSessionService.getSessionId(username, userAgent);
-                
-                // Set cookies for existing session
-                addTokenCookie(response, existingToken);
-                addSessionCookie(response, existingSessionId);
-                
-                return ResponseEntity.ok(new LoginResponse(true, 
-                    "Sesión activa recuperada", 
-                    new UserDTO(usuario)));
+            // Always verify credentials regardless of existing session
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword())
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (Exception e) {
+                log.warn("Login failed - Invalid credentials - IP: {} - Username: {} - Time: {}", 
+                    clientIP, username, timestamp.format(formatter));
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(false, "Credenciales inválidas"));
             }
 
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword())
-            );
+            // If there's an existing session, invalidate it
+            if (userSessionService.hasActiveSession(username, userAgent)) {
+                log.info("Found existing session - Invalidating - IP: {} - Username: {} - Agent: {} - Time: {}", 
+                    clientIP, username, userAgent, timestamp.format(formatter));
+                String existingSessionId = userSessionService.getSessionId(username, userAgent);
+                if (existingSessionId != null) {
+                    userSessionService.removeSession(existingSessionId);
+                }
+            }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            // Generate new token and session
+            String jwt = jwtUtils.generateJwtToken(SecurityContextHolder.getContext().getAuthentication());
             String sessionId = UUID.randomUUID().toString();
             
             Claims claims = jwtUtils.parseJwtToken(jwt);
@@ -145,7 +146,7 @@ public class AuthController {
                 
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(new LoginResponse(false, "Credenciales inválidas"));
+                .body(new LoginResponse(false, "Error en el inicio de sesión"));
         }
     }
 
