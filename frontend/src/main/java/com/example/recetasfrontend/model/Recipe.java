@@ -33,9 +33,21 @@ public class Recipe {
     @NotBlank(message = "La dificultad es obligatoria")
     private String dificultad;
 
+    @NotBlank(message = "El tipo de cocina es obligatorio")
+    private String tipoCocina;
+
+    @NotBlank(message = "El país de origen es obligatorio")
+    private String paisOrigen;
+
+    @NotNull(message = "La porción es obligatoria")
+    @Min(value = 1, message = "La porción debe ser al menos para 1 persona")
+    private Integer porcion;
+
+
     // Fields for backend string format
     private String ingredientes;
     private String preparacion;
+    private String notasExtra;
     private List<?> links;
 
     @NotNull(message = "La lista de ingredientes no puede ser nula")
@@ -125,10 +137,14 @@ public class Recipe {
     }
 
     // Custom validation method
+    
     public boolean isValid() {
         return nombre != null && !nombre.trim().isEmpty() &&
                tiempoPreparacion != null && tiempoPreparacion > 0 &&
                dificultad != null &&
+               tipoCocina != null && !tipoCocina.trim().isEmpty() &&
+               paisOrigen != null && !paisOrigen.trim().isEmpty() &&
+               porcion != null && porcion > 0 &&
                ((listaIngredientes != null && !listaIngredientes.isEmpty()) ||
                 (ingredientes != null && !ingredientes.trim().isEmpty())) &&
                ((pasosPreparacion != null && !pasosPreparacion.isEmpty()) ||
@@ -144,6 +160,10 @@ public class Recipe {
                 .dificultad(this.dificultad)
                 .ingredientes(this.ingredientes)
                 .preparacion(this.preparacion)
+                .tipoCocina(this.tipoCocina)
+                .paisOrigen(this.paisOrigen)
+                .porcion(this.porcion)
+                .notasExtra(this.notasExtra)
                 .creadorUsername(this.creadorUsername)
                 .imageUrl(this.imageUrl)
                 .fechaCreacion(this.fechaCreacion)

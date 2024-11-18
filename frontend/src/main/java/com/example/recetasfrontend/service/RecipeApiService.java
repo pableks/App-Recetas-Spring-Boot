@@ -187,6 +187,10 @@ public class RecipeApiService {
         requestBody.put("dificultad", recipe.getDificultad());
         requestBody.put("ingredientes", ingredientes);
         requestBody.put("preparacion", preparacion);
+        requestBody.put("tipoCocina", recipe.getTipoCocina());
+        requestBody.put("paisOrigen", recipe.getPaisOrigen());
+        requestBody.put("porcion", recipe.getPorcion());
+        requestBody.put("notasExtra", recipe.getNotasExtra());
         
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         
@@ -201,32 +205,45 @@ public class RecipeApiService {
         );
         
         ApiResponse<Recipe> apiResponse = response.getBody();
-        if (apiResponse != null && apiResponse.isSuccess()) {
-            Recipe updatedRecipe = apiResponse.getData();
-            
-            // Convert backend response back to frontend format if needed
-            if (updatedRecipe != null) {
-                if (updatedRecipe.getIngredientes() != null) {
-                    updatedRecipe.setListaIngredientes(
-                        Arrays.asList(updatedRecipe.getIngredientes().split("\n"))
-                    );
+            if (apiResponse != null && apiResponse.isSuccess()) {
+                Recipe updatedRecipe = apiResponse.getData();
+                
+                // Asegurarnos de procesar correctamente los datos recibidos
+                if (updatedRecipe != null) {
+                    // Procesar ingredientes y preparación como antes
+                    if (updatedRecipe.getIngredientes() != null) {
+                        updatedRecipe.setListaIngredientes(
+                            Arrays.asList(updatedRecipe.getIngredientes().split("\n"))
+                        );
+                    }
+                    if (updatedRecipe.getPreparacion() != null) {
+                        updatedRecipe.setPasosPreparacion(
+                            Arrays.asList(updatedRecipe.getPreparacion().split("\n"))
+                        );
+                    }
+                    
+                    // Asegurarnos de que los nuevos campos no sean nulos
+                    if (updatedRecipe.getTipoCocina() == null) {
+                        updatedRecipe.setTipoCocina("Sin especificar");
+                    }
+                    if (updatedRecipe.getPaisOrigen() == null) {
+                        updatedRecipe.setPaisOrigen("Sin especificar");
+                    }
+                    if (updatedRecipe.getPorcion() == null) {
+                        updatedRecipe.setPorcion(1);
+                    }
                 }
-                if (updatedRecipe.getPreparacion() != null) {
-                    updatedRecipe.setPasosPreparacion(
-                        Arrays.asList(updatedRecipe.getPreparacion().split("\n"))
-                    );
-                }
+                
+                return updatedRecipe;
+            } else {
+                String errorMessage = apiResponse != null ? 
+                    apiResponse.getMessage() : "No response from server";
+                throw new RuntimeException("Error updating recipe: " + errorMessage);
             }
-            
-            return updatedRecipe;
-        } else {
-            String errorMessage = apiResponse != null ? apiResponse.getMessage() : "No response from server";
-            throw new RuntimeException("Error updating recipe: " + errorMessage);
+        } catch (Exception e) {
+            logger.error("Error updating recipe with id: " + id, e);
+            throw new RuntimeException("Error updating recipe: " + e.getMessage(), e);
         }
-    } catch (Exception e) {
-        logger.error("Error updating recipe with id: " + id, e);
-        throw new RuntimeException("Error updating recipe: " + e.getMessage(), e);
-    }
 }
 
     public void deleteRecipe(Long id, HttpServletRequest request) {

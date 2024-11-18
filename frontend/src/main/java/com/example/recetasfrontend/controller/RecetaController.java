@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -120,8 +121,31 @@ public class RecetaController {
                 recipe.setPasosPreparacion(new ArrayList<>());
             }
             
+            // Asegurarse de que los nuevos campos tengan valores por defecto
+            if (recipe.getTipoCocina() == null) {
+                recipe.setTipoCocina("Sin especificar");
+            }
+            if (recipe.getPaisOrigen() == null) {
+                recipe.setPaisOrigen("Sin especificar");
+            }
+            if (recipe.getPorcion() == null) {
+                recipe.setPorcion(1);
+            }
+            
+            // Añadir la lista de tipos de cocina al modelo
+            model.addAttribute("tiposCocina", Arrays.asList(
+                "CARNES",
+                "PESCADOS",
+                "VEGETARIANA",
+                "VEGANA",
+                "POSTRES",
+                "SOPAS",
+                "PASTAS",
+                "OTROS"
+            ));
+            
             model.addAttribute("recipe", recipe);
-            addAuthAttributesToModel(request, model);  // Add this line
+            addAuthAttributesToModel(request, model);
             return "receta-edit";
         } catch (Exception e) {
             model.addAttribute("error", "Error loading recipe: " + e.getMessage());

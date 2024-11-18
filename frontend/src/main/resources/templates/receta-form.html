@@ -38,6 +38,48 @@
                                         Por favor, ingrese un tiempo de preparación válido.
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="tipoCocina" class="form-label">Tipo de Cocina*</label>
+                                    <select class="form-select" id="tipoCocina" 
+                                            th:field="*{tipoCocina}" required>
+                                        <option value="">Selecciona tipo de cocina</option>
+                                        <option value="CARNES">Carnes</option>
+                                        <option value="PESCADOS">Pescados</option>
+                                        <option value="VEGETARIANA">Vegetariana</option>
+                                        <option value="VEGANA">Vegana</option>
+                                        <option value="POSTRES">Postres</option>
+                                        <option value="SOPAS">Sopas</option>
+                                        <option value="PASTAS">Pastas</option>
+                                        <option value="OTROS">Otros</option>
+                                    </select>
+                                    <div class="invalid-feedback" 
+                                         th:if="${#fields.hasErrors('tipoCocina')}" 
+                                         th:errors="*{tipoCocina}">
+                                        Por favor, seleccione un tipo de cocina
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="paisOrigen" class="form-label">País de Origen*</label>
+                                    <input type="text" class="form-control" id="paisOrigen" 
+                                           th:field="*{paisOrigen}" required>
+                                    <div class="invalid-feedback" 
+                                         th:if="${#fields.hasErrors('paisOrigen')}" 
+                                         th:errors="*{paisOrigen}">
+                                        Por favor, ingrese el país de origen
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="porcion" class="form-label">Porciones*</label>
+                                    <input type="number" class="form-control" id="porcion" 
+                                           th:field="*{porcion}" min="1" required>
+                                    <div class="invalid-feedback" 
+                                         th:if="${#fields.hasErrors('porcion')}" 
+                                         th:errors="*{porcion}">
+                                        Por favor, ingrese el número de porciones
+                                    </div>
+                                </div>
 
                                 <div class="mb-3">
                                     <label for="dificultad" class="form-label">Dificultad*</label>
@@ -70,6 +112,13 @@
                                             onclick="addInstruction()">
                                         + Agregar Paso
                                     </button>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notasExtra" class="form-label">Notas Adicionales</label>
+                                    <textarea class="form-control" id="notasExtra" 
+                                              th:field="*{notasExtra}" rows="3">
+                                    </textarea>
                                 </div>
 
                                 <!-- Submit Buttons -->

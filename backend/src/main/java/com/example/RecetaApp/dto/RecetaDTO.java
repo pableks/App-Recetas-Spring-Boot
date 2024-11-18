@@ -14,6 +14,10 @@ public class RecetaDTO {
     private List<String> listaIngredientes;
     private String preparacion;
     private List<String> pasosPreparacion;
+    private String tipoCocina;
+    private String paisOrigen;
+    private Integer porcion;
+    private String notasExtra;
 
     public RecetaDTO(Receta receta) {
         this.id = receta.getId();
@@ -25,6 +29,10 @@ public class RecetaDTO {
         this.listaIngredientes = receta.getListaIngredientes();
         this.preparacion = receta.getPreparacion();
         this.pasosPreparacion = receta.getPasosPreparacion();
+        this.tipoCocina = receta.getTipoCocina();
+        this.paisOrigen = receta.getPaisOrigen();
+        this.porcion = receta.getPorcion();
+        this.notasExtra = receta.getNotasExtra();
     }
 
     // Getters y setters
@@ -98,5 +106,37 @@ public class RecetaDTO {
 
     public void setPasosPreparacion(List<String> pasosPreparacion) {
         this.pasosPreparacion = pasosPreparacion;
+    }
+    // Añadir getters y setters para los nuevos campos
+    public String getTipoCocina() {
+        return tipoCocina;
+    }
+
+    public void setTipoCocina(String tipoCocina) {
+        this.tipoCocina = tipoCocina;
+    }
+
+    public String getPaisOrigen() {
+        return paisOrigen;
+    }
+
+    public void setPaisOrigen(String paisOrigen) {
+        this.paisOrigen = paisOrigen;
+    }
+
+    public Integer getPorcion() {
+        return porcion;
+    }
+
+    public void setPorcion(Integer porcion) {
+        this.porcion = porcion;
+    }
+
+    public String getNotasExtra() {
+        return notasExtra;
+    }
+
+    public void setNotasExtra(String notasExtra) {
+        this.notasExtra = notasExtra;
     }
 }

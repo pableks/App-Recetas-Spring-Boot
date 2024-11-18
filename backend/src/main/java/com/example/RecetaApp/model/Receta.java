@@ -54,6 +54,26 @@ public class Receta extends RepresentationModel<Receta> {
     @Column(name = "paso")
     private List<String> pasosPreparacion;
 
+
+    // Campos adicionales
+
+    @NotBlank(message = "El tipo de cocina no puede estar vacío")
+    @Column(name = "tipo_cocina")
+    private String tipoCocina;
+
+    @NotBlank(message = "El país de origen no puede estar vacío")
+    @Column(name = "pais_origen")
+    private String paisOrigen;
+
+    @NotNull(message = "La porción no puede estar vacía")
+    @Min(value = 1, message = "La porción debe ser al menos 1")
+    @Column(name = "porcion")
+    private Integer porcion;
+
+    @Column(name = "notas_extra", length = 2000)
+    private String notasExtra;
+
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -126,4 +146,38 @@ public class Receta extends RepresentationModel<Receta> {
     public void setPasosPreparacion(List<String> pasosPreparacion) {
         this.pasosPreparacion = pasosPreparacion;
     }
+
+    // Añadir getters y setters para los nuevos campos
+    public String getTipoCocina() {
+        return tipoCocina;
+    }
+
+    public void setTipoCocina(String tipoCocina) {
+        this.tipoCocina = tipoCocina;
+    }
+
+    public String getPaisOrigen() {
+        return paisOrigen;
+    }
+
+    public void setPaisOrigen(String paisOrigen) {
+        this.paisOrigen = paisOrigen;
+    }
+
+    public Integer getPorcion() {
+        return porcion;
+    }
+
+    public void setPorcion(Integer porcion) {
+        this.porcion = porcion;
+    }
+
+    public String getNotasExtra() {
+        return notasExtra;
+    }
+
+    public void setNotasExtra(String notasExtra) {
+        this.notasExtra = notasExtra;
+    }
+
 }

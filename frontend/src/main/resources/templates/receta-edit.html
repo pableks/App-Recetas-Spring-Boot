@@ -15,10 +15,9 @@
                             <h2 class="card-title text-center mb-4">Editar Receta</h2>
 
                             <form th:action="@{/recetas/edit/{id}(id=${recipe.id})}" method="POST" th:object="${recipe}">
-
                                 <input type="hidden" th:field="*{id}" />
 
-                                <!-- Basic Recipe Fields -->
+                                <!-- Nombre de la Receta -->
                                 <div class="mb-3">
                                     <label for="nombre" class="form-label">Nombre de la Receta*</label>
                                     <input type="text" class="form-control" id="nombre" 
@@ -29,6 +28,45 @@
                                     </div>
                                 </div>
 
+                                <!-- Tipo de Cocina -->
+                                <div class="mb-3">
+                                    <label for="tipoCocina" class="form-label">Tipo de Cocina*</label>
+                                    <select class="form-select" id="tipoCocina" 
+                                            th:field="*{tipoCocina}" required>
+                                        <option value="">Selecciona tipo de cocina</option>
+                                        <option th:each="tipo : ${tiposCocina}"
+                                                th:value="${tipo}"
+                                                th:text="${tipo}">Tipo de Cocina</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('tipoCocina')}" 
+                                         th:errors="*{tipoCocina}">
+                                        Por favor, seleccione un tipo de cocina
+                                    </div>
+                                </div>
+
+                                <!-- País de Origen -->
+                                <div class="mb-3">
+                                    <label for="paisOrigen" class="form-label">País de Origen*</label>
+                                    <input type="text" class="form-control" id="paisOrigen" 
+                                           th:field="*{paisOrigen}" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('paisOrigen')}" 
+                                         th:errors="*{paisOrigen}">
+                                        Por favor, ingrese el país de origen
+                                    </div>
+                                </div>
+
+                                <!-- Porciones -->
+                                <div class="mb-3">
+                                    <label for="porcion" class="form-label">Porciones*</label>
+                                    <input type="number" class="form-control" id="porcion" 
+                                           th:field="*{porcion}" min="1" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('porcion')}" 
+                                         th:errors="*{porcion}">
+                                        Por favor, ingrese un número válido de porciones
+                                    </div>
+                                </div>
+
+                                <!-- Tiempo de Preparación -->
                                 <div class="mb-3">
                                     <label for="tiempoPreparacion" class="form-label">
                                         Tiempo de Preparación (minutos)*
@@ -42,6 +80,7 @@
                                     </div>
                                 </div>
 
+                                <!-- Dificultad -->
                                 <div class="mb-3">
                                     <label for="dificultad" class="form-label">Dificultad*</label>
                                     <select class="form-select" id="dificultad" 
@@ -92,6 +131,14 @@
                                             onclick="addInstruction()">
                                         + Agregar Paso
                                     </button>
+                                </div>
+
+                                <!-- Notas Extra -->
+                                <div class="mb-3">
+                                    <label for="notasExtra" class="form-label">Notas Adicionales</label>
+                                    <textarea class="form-control" id="notasExtra" 
+                                              th:field="*{notasExtra}" rows="3"
+                                              placeholder="Agrega notas adicionales, consejos o variaciones de la receta"></textarea>
                                 </div>
 
                                 <!-- Submit Buttons -->
