@@ -30,6 +30,7 @@ public class SecurityConfig {
                     "/recetas/**",
                     "/recetas/create",
                     "/recetas/edit/**",
+                    "/recetas/eliminar/**",
 
                     "/css/**",
                     "/js/**",

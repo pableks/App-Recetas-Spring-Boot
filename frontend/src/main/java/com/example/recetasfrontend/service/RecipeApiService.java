@@ -237,7 +237,7 @@ public class RecipeApiService {
             logger.debug("Deleting recipe with id: {}", id);
             
             ResponseEntity<ApiResponse<Void>> response = restTemplate.exchange(
-                API_BASE_URL + "/recetas/" + id,
+                API_BASE_URL + "/recetas/eliminar/" + id,
                 HttpMethod.DELETE,
                 entity,
                 new ParameterizedTypeReference<ApiResponse<Void>>() {}
